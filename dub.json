@@ -1,0 +1,12 @@
+{
+	"copyright": "Copyright © 2016, Leonardo Tada",
+	"dependencies": {
+		"dgame": "~>0.6.5"
+	},
+	"name": "dgame-ex",
+	"authors": [
+		"Leonardo Tada"
+	],
+	"description": "A minimal D application.",
+	"license": "proprietary"
+}
