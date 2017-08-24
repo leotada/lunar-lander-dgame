@@ -23,19 +23,21 @@ void main()
     txtSpeed.setPosition(0, 30);
     txtFuel.setPosition(0, 60);
     float gravity = 1.622;
+    Rect EarthRect;
 
 
     struct Player
     {
         static immutable int width = 77, height = 80;
+        Rect rect;
         static immutable string image = "player.png";
         Texture img;
         Sprite player;
-        int moveSpeed = -6;
+        int moveSpeed = -2;
         float vSpeed = 0;
         float hSpeed = 0;
-        float fuel = 300;
-        float altitude = 520;
+        float fuel = 3000;
+        float altitude = 514;
         float aceleration = 1.622;
         float hAceleration = 2;
         float time = 0;
@@ -43,16 +45,32 @@ void main()
         float hv0 = 0;
         bool acelerating = false;
         int direction = 0;
+        bool colliding = false;
 
         void create()
         {
             img = Texture(Surface(Player.image));
             player = new Sprite(img);
             player.setPosition(20, 50);
+            rect = Rect(20, 50, 77, 80);
         }
         // Called once per frame
         void update(ref Window wnd)
         {
+            // colision
+            if (rect.intersects(EarthRect))
+            {
+                colliding = true;
+                if (vSpeed > 5.0)
+                {
+                    writeln("explodes!");
+                }
+            }
+            else
+            {
+                colliding = false;
+            }
+
             // When the fuel runs out
             if (fuel <= 0.0)
             {
@@ -60,30 +78,52 @@ void main()
                 acelerating = false;
                 direction = 0;
             }
-            // vertical velocity / gravidade
+            // aceleration / gravidade
             if (acelerating)
             {
                 aceleration = moveSpeed;
                 fuel -= 10 * delta;
             }
-            else
+            else if (!colliding)
             {
                 aceleration = gravity;
             }
+            else
+            {
+                aceleration = 0;
+            }
+
+            // vertical velocity
             vSpeed = v0 + aceleration * delta;
             v0 = vSpeed;
+            if (colliding && vSpeed > 0)  // do chão não passa
+            {
+                vSpeed = 0;
+                v0 = 0;
+            }
             move(0, to!int(vSpeed));
             altitude -= vSpeed * delta;
 
             // horizontal velocity
-            hSpeed = hv0 + (hAceleration*direction) * delta;
-            hv0 = hSpeed;
-            move(to!int(hSpeed), 0);
+            if (!colliding)
+            {
+                hSpeed = hv0 + (hAceleration*direction) * delta;
+                hv0 = hSpeed;
+                move(to!int(hSpeed), 0);
+            }
+            else
+            {
+                hSpeed = hv0 + (hAceleration*direction) * delta;
+                hv0 = hSpeed * 0.999;
+                move(to!int(hSpeed), 0);
+            }
+
             // fuel combustion
             if (direction != 0)
             {
                 fuel -= 5 * delta;
             }
+
             // draw
             wnd.draw(player);
         }
@@ -91,6 +131,7 @@ void main()
         void move(int x, int y)
         {
             player.move(x*delta, y*delta);
+            rect.setPosition(cast(int)player.x, cast(int)player.y);
         }
     }
 
@@ -103,6 +144,7 @@ void main()
             Vertex( 75, 800)
         ]
     );
+    EarthRect = Rect(75, 800-170, 800-75, 75);
     Earth.fill = Shape.Fill.Full;
     Earth.setColor(Color4b.Blue);
     Earth.setPosition(0, 550);
@@ -152,9 +194,9 @@ void main()
         // Draw update
         player.update(wnd);
         wnd.draw(Earth);
-        txtAlt.format("Altitude: %s.", to!string(player.altitude));
-        txtSpeed.format("Speed: %s.", to!string(player.vSpeed));
-        txtFuel.format("Fuel: %s.", to!string(player.fuel));
+        txtAlt.format("Altitude: %d", to!int(player.altitude));
+        txtSpeed.format("Speed: %s", to!string(player.vSpeed));
+        txtFuel.format("Fuel: %s", to!string(player.fuel));
 		wnd.draw(txtAlt);
 		wnd.draw(txtSpeed);
 		wnd.draw(txtFuel);
