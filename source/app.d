@@ -17,12 +17,18 @@ void main()
     float last_delta = 0;
     float delta = 0;
     Font fnt = Font("fonts/LiberationSans-Regular.ttf", 22);
+    Font fntGO = Font("fonts/LiberationSans-Regular.ttf", 72);
 	Text txtAlt = new Text(fnt);
 	Text txtSpeed = new Text(fnt);
 	Text txtFuel = new Text(fnt);
+	Text txtReset = new Text(fnt);
+	Text txtGameOver = new Text(fntGO);
     txtSpeed.setPosition(0, 30);
     txtFuel.setPosition(0, 60);
+    txtReset.setPosition(0, 90);
+    txtGameOver.setPosition(280, 300);
     float gravity = 1.622;
+    bool gameover = false;
     Rect EarthRect;
 
 
@@ -54,6 +60,24 @@ void main()
             player.setPosition(20, 50);
             rect = Rect(20, 50, 77, 80);
         }
+
+        void reset()
+        {
+            vSpeed = 0;
+            hSpeed = 0;
+            fuel = 3000;
+            altitude = 514;
+            time = 0;
+            v0 = 0;
+            hv0 = 0;
+            acelerating = false;
+            direction = 0;
+            colliding = false;
+            player.setPosition(20, 50);
+            rect.setPosition(cast(int)player.x, cast(int)player.y);
+            gameover = false;
+        }
+
         // Called once per frame
         void update(ref Window wnd)
         {
@@ -61,8 +85,9 @@ void main()
             if (rect.intersects(EarthRect))
             {
                 colliding = true;
-                if (vSpeed > 5.0)
+                if (vSpeed > 8.0)
                 {
+                    gameover = true;
                     writeln("explodes!");
                 }
             }
@@ -151,6 +176,7 @@ void main()
     Player player = Player();
     player.create();
     bool running = true;
+    txtReset.format("Press R to reset");
 
     // Main game loop
     Event event;
@@ -172,6 +198,8 @@ void main()
                 case Event.Type.KeyDown:  // evento tecla (não gameplay)
                     if (event.keyboard.key == Keyboard.Key.Esc)
                         running = false; // or: wnd.push(Event.Type.Quit);
+                    else if (event.keyboard.key == Keyboard.Key.R)
+                        player.reset();
                 break;
 
                 default: break;
@@ -197,9 +225,15 @@ void main()
         txtAlt.format("Altitude: %d", to!int(player.altitude));
         txtSpeed.format("Speed: %s", to!string(player.vSpeed));
         txtFuel.format("Fuel: %s", to!string(player.fuel));
+        if (gameover)
+        {
+            txtGameOver.format("GAME OVER");
+            wnd.draw(txtGameOver);
+        }
 		wnd.draw(txtAlt);
 		wnd.draw(txtSpeed);
 		wnd.draw(txtFuel);
+		wnd.draw(txtReset);
         wnd.display();
         // deltatime
         delta = abs(clockdt.getElapsedTime().msecs - last_delta) / 100;
