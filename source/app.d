@@ -37,12 +37,14 @@ void main()
         static immutable int width = 77, height = 80;
         Rect rect;
         static immutable string image = "player.png";
+        static immutable string imageEx = "explosion.png";
         Texture img;
+        Texture imgEx;
         Sprite player;
         int moveSpeed = -2;
         float vSpeed = 0;
         float hSpeed = 0;
-        float fuel = 3000;
+        float fuel = 300;
         float altitude = 514;
         float aceleration = 1.622;
         float hAceleration = 2;
@@ -56,6 +58,7 @@ void main()
         void create()
         {
             img = Texture(Surface(Player.image));
+            imgEx = Texture(Surface(Player.imageEx));
             player = new Sprite(img);
             player.setPosition(20, 50);
             rect = Rect(20, 50, 77, 80);
@@ -65,7 +68,7 @@ void main()
         {
             vSpeed = 0;
             hSpeed = 0;
-            fuel = 3000;
+            fuel = 300;
             altitude = 514;
             time = 0;
             v0 = 0;
@@ -76,6 +79,7 @@ void main()
             player.setPosition(20, 50);
             rect.setPosition(cast(int)player.x, cast(int)player.y);
             gameover = false;
+            player.setTexture(img);
         }
 
         // Called once per frame
@@ -88,6 +92,7 @@ void main()
                 if (vSpeed > 8.0)
                 {
                     gameover = true;
+                    player.setTexture(imgEx);
                     writeln("explodes!");
                 }
             }
